@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelime Türetme v6.1</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #4caf50;
+            --error-color: #f44336;
+            --bg-glass: rgba(0, 0, 0, 0.65);
+        }
+
+        * { box-sizing: border-box; }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; color: white;
+            background-color: #1a1a1a;
+        }
+
+        #bg-layer {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-size: cover; background-position: center;
+            z-index: -1;
+            transition: background-image 1s ease-in-out;
+            /* Başlangıçta Gece Modu */
+            background-image: url('bg_night.png'), url('https://images.unsplash.com/photo-1506704906740-c474052602d3?q=80&w=1920'); 
+        }
+
+        .card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(12px);
+            padding: 30px 20px;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            text-align: center;
+            width: 92%; max-width: 550px;
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 10;
+        }
+
+        .letter-container {
+            display: flex; justify-content: center; gap: 4px;
+            margin: 20px 0; flex-wrap: nowrap; overflow: hidden;
+            padding: 10px 5px;
+        }
+
+        .letter-input {
+            width: clamp(25px, 8vw, 40px);
+            height: clamp(35px, 10vw, 50px);
+            font-size: clamp(1rem, 4vw, 1.5rem);
+            font-weight: bold;
+            text-align: center; text-transform: uppercase;
+            border: 2px solid rgba(255,255,255,0.2); border-radius: 8px;
+            background: rgba(255,255,255,0.1); color: white;
+            outline: none; flex-shrink: 1; transition: all 0.2s;
+        }
+
+        .letter-input.correct { border-color: var(--primary-color); background: rgba(76, 175, 80, 0.4); border-width: 3px; }
+        .letter-input.error { border-color: var(--error-color); background: rgba(244, 67, 54, 0.3); animation: shake 0.4s; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        #tube-outer {
+            position: fixed; left: 20px; top: 50%; transform: translateY(-50%);
+            width: 18px; height: 250px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 30px; overflow: hidden; display: none;
+        }
+
+        #tube-fill {
+            position: absolute; bottom: 0; width: 100%; height: 0%;
+            background: linear-gradient(to top, #1b5e20, #4caf50);
+            transition: height 0.6s ease;
+        }
+
+        .timer-info { font-size: 0.9rem; margin-bottom: 10px; display: flex; justify-content: space-between; color: #ddd; }
+        #countdown { color: #ff9800; font-weight: bold; }
+
+        .btn {
+            background: var(--primary-color); color: white; border: none;
+            padding: 14px 28px; font-size: 1rem; font-weight: bold;
+            border-radius: 12px; cursor: pointer; transition: 0.3s;
+            margin: 5px; width: 85%;
+        }
+        .btn:hover { transform: scale(1.05); background: #43a047; }
+
+        @media (max-width: 768px) {
+            #tube-outer { left: 8px; height: 180px; width: 12px; }
+            .card { padding: 20px 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="bg-layer"></div>
+    <div id="tube-outer"><div id="tube-fill"></div></div>
+
+    <div class="card" id="menu-screen">
+        <h1 style="color: var(--primary-color);">KELİME TÜRET</h1>
+        <button class="btn" onclick="startGame('free')">SÜRESİZ (Gündüz)</button><br>
+        <button class="btn" onclick="startGame('timed')" style="background: #e67e22;">SÜRELİ (Challenge)</button>
+    </div>
+
+    <div class="card" id="game-screen" style="display: none;">
+        <div class="timer-info">
+            <span>Zaman: <span id="stopwatch">00:00</span></span>
+            <span id="q-counter">1 / 10</span>
+            <span id="timed-ui" style="display: none;">Kalan: <span id="countdown">15</span>s</span>
+        </div>
+        <div id="current-formula" style="font-size: 1.3rem; margin: 15px 0;">---</div>
+        <div class="letter-container" id="letter-container"></div>
+    </div>
+
+    <div class="card" id="final-screen" style="display: none;">
+        <h1 style="color: gold;">TEBRİKLER!</h1>
+        <p>Toplam Süre: <span id="final-time">00:00</span></p>
+        <button class="btn" onclick="location.reload()">MENÜYE DÖN</button>
+    </div>
+
+    <script>
+        // Yeni Sesler (Daha belirgin)
+        const correctSound = new Audio('https://www.soundjay.com/buttons/sounds/button-3.mp3');
+        const errorSound = new Audio('https://www.soundjay.com/buttons/sounds/button-10.mp3');
+
+        // Kelime Listen
+        const allWords = [
+            {q: "Bloom + Biology", a: "Bloomology"}, {q: "Sprout + Maintain", a: "Sproutain"}, {q: "Floral + Universe", a: "Floraverse"},
+            {q: "Verdant + Nature", a: "Verdanture"}, {q: "Stem + Empathy", a: "Stempathy"}, {q: "Seed + Landscape", a: "Seedscape"},
+            {q: "Branch + Chic", a: "Branchic"}, {q: "Moss + Osmosis", a: "Mossmosis"}, {q: "Twig + Digital", a: "Twigital"},
+            {q: "Leaf + Purity", a: "Leafity"}, {q: "Vine + Innovate", a: "Vinevate"}, {q: "Fern + Finish", a: "Fernish"},
+            {q: "Root + Utopia", a: "Rootopia"}, {q: "Bud + Flow", a: "Budflow"}, {q: "Bark + Architecture", a: "Barkitecture"},
+            {q: "Eco + Philosophia", a: "Ecosophia"}, {q: "Environment + Real", a: "Envireal"}, {q: "Sustain + Unity", a: "Sustainity"},
+            {q: "Recycle + Circulate", a: "Recyculate"}, {q: "Pure + Essence", a: "Purisense"}, {q: "Clean + Energy", a: "Cleanergy"},
+            {q: "Earth + Ethos", a: "Earthos"}, {q: "Global + Bright", a: "Globright"}, {q: "Ozone + Invigorate", a: "Ozonate"},
+            {q: "Terra + Form", a: "Terraform"}, {q: "Wild + Wonderful", a: "Wilderful"}, {q: "Bio + Flow", a: "Bioflow"},
+            {q: "Green + Serenity", a: "Greenity"}, {q: "Planet + Tune", a: "Planetune"}, {q: "Nature + Rhythm", a: "Naturhythm"}
+        ];
+
+        let currentIndex = 0, gameData = [], gameMode = 'free', startTime, timerInterval, countdownInterval, timeLeft = 15, tubeEnergy = 0;
+
+        function startGame(mode) {
+            gameMode = mode;
+            document.getElementById('menu-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            document.getElementById('tube-outer').style.display = 'block';
+            
+            // Oyun sırasında gündüz resmi
+            document.getElementById('bg-layer').style.backgroundImage = "url('bg_day.png'), url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1920')";
+
+            if(mode === 'timed') document.getElementById('timed-ui').style.display = 'inline';
+            gameData = [...allWords].sort(() => Math.random() - 0.5).slice(0, 10);
+            startTime = Date.now();
+            startStopwatch();
+            loadLevel();
+        }
+
+        function startStopwatch() {
+            timerInterval = setInterval(() => {
+                let diff = Math.floor((Date.now() - startTime) / 1000);
+                let m = Math.floor(diff / 60).toString().padStart(2, '0');
+                let s = (diff % 60).toString().padStart(2, '0');
+                document.getElementById('stopwatch').textContent = `${m}:${s}`;
+            }, 1000);
+        }
+
+        function loadLevel() {
+            const current = gameData[currentIndex];
+            document.getElementById('current-formula').textContent = current.q;
+            document.getElementById('q-counter').textContent = `${currentIndex + 1} / 10`;
+            const container = document.getElementById('letter-container');
+            container.innerHTML = '';
+
+            for (let i = 0; i < current.a.length; i++) {
+                const input = document.createElement('input');
+                input.type = 'text'; input.maxLength = 1; input.className = 'letter-input';
+                input.addEventListener('input', (e) => {
+                    if (e.target.value.length === 1 && container.children[i + 1]) container.children[i + 1].focus();
+                    checkAnswer();
+                });
+                container.appendChild(input);
+            }
+            if(gameMode === 'timed') startCountdown();
+        }
+
+        function startCountdown() {
+            clearInterval(countdownInterval);
+            timeLeft = 15;
+            document.getElementById('countdown').textContent = timeLeft;
+            countdownInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('countdown').textContent = timeLeft;
+                if(timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    errorSound.play();
+                    tubeEnergy = Math.max(0, tubeEnergy - 5);
+                    document.getElementById('tube-fill').style.height = tubeEnergy + '%';
+                    nextLevel();
+                }
+            }, 1000);
+        }
+
+        function checkAnswer() {
+            const inputs = document.querySelectorAll('.letter-input');
+            let userWord = "";
+            inputs.forEach(input => userWord += input.value);
+            const target = gameData[currentIndex].a;
+
+            if (userWord.length === target.length) {
+                if (userWord.toLowerCase() === target.toLowerCase()) {
+                    clearInterval(countdownInterval);
+                    correctSound.play();
+                    inputs.forEach(input => input.classList.add('correct'));
+                    tubeEnergy = Math.min(100, tubeEnergy + 10);
+                    document.getElementById('tube-fill').style.height = tubeEnergy + '%';
+                    setTimeout(nextLevel, 600);
+                } else {
+                    errorSound.play();
+                    inputs.forEach(input => {
+                        input.classList.add('error');
+                        setTimeout(() => input.classList.remove('error'), 400);
+                    });
+                }
+            }
+        }
+
+        function nextLevel() {
+            currentIndex++;
+            if (currentIndex < 10) loadLevel();
+            else finishGame();
+        }
+
+        function finishGame() {
+            clearInterval(timerInterval);
+            clearInterval(countdownInterval);
+            // Bitişte Gece Modu
+            document.getElementById('bg-layer').style.backgroundImage = "url('bg_night.png'), url('https://images.unsplash.com/photo-1506704906740-c474052602d3?q=80&w=1920')";
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('final-screen').style.display = 'block';
+            document.getElementById('final-time').textContent = document.getElementById('stopwatch').textContent;
+            confetti({ particleCount: 200, spread: 100 });
+        }
+    </script>
+</body>
+</html>
