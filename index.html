@@ -3,58 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blending - Kelime Türetme</title>
+    <title>Blending - Pixel Art Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
             --primary-color: #4caf50;
-            --bg-glass: rgba(0, 0, 0, 0.7);
+            --bg-glass: rgba(0, 0, 0, 0.6);
         }
 
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Courier New', Courier, monospace; /* Pixel temasına uygun font */
             display: flex; justify-content: center; align-items: center;
             overflow: hidden; color: white;
             background-color: #000;
         }
 
-        /* GECE VE GÜNDÜZÜ YÖNETEN KATMAN */
         #bg-layer {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-size: cover;
-            background-position: center;
+            background-size: cover; background-position: center;
             z-index: -1;
-            transition: background-image 1.5s ease-in-out; /* Geçiş yumuşatma */
-            /* İLK AÇILIŞ: GECE RESMİ */
-            background-image: url('https://images.unsplash.com/photo-1532767153582-b1a0e5145009?q=80&w=2000'); 
+            transition: background-image 1.5s ease-in-out;
+            /* BAŞLANGIÇTA SENİN ATTIĞIN GECE RESMİ */
+            background-image: url('https://r.jina.ai/i/6f8812c8cc78440989d9724128a1be52'); 
         }
 
         .card {
             background: var(--bg-glass);
-            backdrop-filter: blur(15px);
-            padding: 40px;
-            border-radius: 30px;
-            text-align: center;
-            width: 90%; max-width: 500px;
-            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(8px);
+            padding: 30px; border-radius: 15px;
+            text-align: center; width: 90%; max-width: 450px;
+            border: 4px solid #fff; /* Pixel art tarzı kalın çerçeve */
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
         }
 
         .btn {
-            background: var(--primary-color);
-            color: white; border: none;
-            padding: 15px 30px; font-size: 1.2rem;
-            border-radius: 15px; cursor: pointer;
-            margin-top: 20px; width: 100%;
+            background: #e67e22; color: white; border: 4px solid #d35400;
+            padding: 15px; font-size: 1.2rem; font-weight: bold;
+            cursor: pointer; width: 100%; margin-top: 20px;
+            image-rendering: pixelated;
         }
 
-        .letter-container { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
+        .btn:hover { background: #d35400; }
+
+        .letter-container { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
         .letter-input {
-            width: 40px; height: 50px; font-size: 1.5rem;
-            text-align: center; background: rgba(255,255,255,0.1);
-            color: white; border: 2px solid #555; border-radius: 8px;
+            width: 35px; height: 45px; text-align: center;
+            font-size: 1.5rem; background: #fff; color: #000;
+            border: 3px solid #333; outline: none;
         }
-        .correct { border-color: var(--primary-color) !important; background: rgba(76, 175, 80, 0.2); }
     </style>
 </head>
 <body>
@@ -62,49 +59,38 @@
     <div id="bg-layer"></div>
 
     <div class="card" id="menu-screen">
-        <h1 style="color: var(--primary-color);">BLENDİNG</h1>
-        <p>Kelimeleri birleştir, dünyayı aydınlat.</p>
-        <button class="btn" onclick="startGame()">OYUNU BAŞLAT</button>
+        <h1 style="color: #f1c40f; text-shadow: 2px 2px #000;">BLENDİNG</h1>
+        <p>Doğayı aydınlatmak için kelimeleri çöz!</p>
+        <button class="btn" onclick="startGame()">MACERAYA BAŞLA</button>
     </div>
 
     <div class="card" id="game-screen" style="display: none;">
-        <h2 id="formula">Yükleniyor...</h2>
+        <h2 id="formula" style="background: rgba(0,0,0,0.5); padding: 10px;">---</h2>
         <div class="letter-container" id="letter-container"></div>
     </div>
 
-    <div class="card" id="final-screen" style="display: none;">
-        <h1>Tebrikler Şampiyon!</h1>
-        <p>Her şey aydınlandı.</p>
-        <button class="btn" onclick="location.reload()">BAŞTAN OYNA</button>
-    </div>
-
     <script>
-        // RESİM LİNKLERİNİ BURADAN KONTROL EDEBİLİRSİN
-        const NIGHT_IMG = "url('https://images.unsplash.com/photo-1532767153582-b1a0e5145009?q=80&w=2000')";
-        const DAY_IMG = "url('https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=2000')";
+        // SENİN ATTIĞIN RESİMLERİN ADRESLERİ
+        const NIGHT_IMG = "url('https://r.jina.ai/i/6f8812c8cc78440989d9724128a1be52')";
+        const DAY_IMG = "url('https://r.jina.ai/i/05e26da6899f4d309be0be9337581f18')";
 
-        const words = [
-            {q: "Bloom + Biology", a: "Bloomology"},
-            {q: "Sprout + Maintain", a: "Sproutain"}
-        ];
-        let currentIdx = 0;
+        const words = [{q: "Bloom + Biology", a: "Bloomology"}];
 
         function startGame() {
             document.getElementById('menu-screen').style.display = 'none';
             document.getElementById('game-screen').style.display = 'block';
-
-            // GÜNDÜZE GEÇİŞ YAPILIYOR
+            
+            // GÜNDÜZ RESMİNE GEÇİŞ
             document.getElementById('bg-layer').style.backgroundImage = DAY_IMG;
             
             loadLevel();
         }
 
         function loadLevel() {
-            const data = words[currentIdx];
+            const data = words[0];
             document.getElementById('formula').innerText = data.q;
             const container = document.getElementById('letter-container');
             container.innerHTML = '';
-
             for(let i=0; i<data.a.length; i++) {
                 const input = document.createElement('input');
                 input.className = 'letter-input';
@@ -119,27 +105,17 @@
         }
 
         function checkAnswer() {
-            const inputs = document.querySelectorAll('.letter-input');
-            let userVal = "";
-            inputs.forEach(i => userVal += i.value);
-
-            if(userVal.toLowerCase() === words[currentIdx].a.toLowerCase()) {
-                inputs.forEach(i => i.classList.add('correct'));
+            let guess = "";
+            document.querySelectorAll('.letter-input').forEach(i => guess += i.value);
+            if(guess.toLowerCase() === words[0].a.toLowerCase()) {
+                confetti({ particleCount: 100, spread: 70 });
                 setTimeout(() => {
-                    currentIdx++;
-                    if(currentIdx < words.length) loadLevel();
-                    else finishGame();
-                }, 800);
+                    alert("Orman Aydınlandı!");
+                    // OYUN BİTİNCE GECEYE DÖNÜŞ (İstersen silebilirsin)
+                    document.getElementById('bg-layer').style.backgroundImage = NIGHT_IMG;
+                    location.reload();
+                }, 1000);
             }
-        }
-
-        function finishGame() {
-            // OYUN BİTTİĞİNDE GECEYE DÖNÜŞ (İstersen bunu kaldırabilirsin)
-            document.getElementById('bg-layer').style.backgroundImage = NIGHT_IMG;
-            
-            document.getElementById('game-screen').style.display = 'none';
-            document.getElementById('final-screen').style.display = 'block';
-            confetti({ particleCount: 150, spread: 70 });
         }
     </script>
 </body>
