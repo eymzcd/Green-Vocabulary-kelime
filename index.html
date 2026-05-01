@@ -27,8 +27,9 @@
             background-size: cover; background-position: center;
             z-index: -1;
             transition: background-image 1.2s ease-in-out;
-            /* İlk açılışta Gece Resmi */
-            background-image: url('https://images.unsplash.com/photo-1506318137071-a8e063b4bcc0?q=80&w=2000'); 
+
+            /* 🌙 BAŞLANGIÇ = GECE */
+            background-image: url('images/gece.png');
         }
 
         .card {
@@ -117,7 +118,7 @@
             <span id="q-counter">1 / 10</span>
             <span id="timed-ui" style="display: none;">Kalan: <span id="countdown">15</span>s</span>
         </div>
-        <div id="current-formula" style="font-size: 1.5rem; margin: 20px 0; font-weight: bold; color: #fff;">---</div>
+        <div id="current-formula" style="font-size: 1.5rem; margin: 20px 0; font-weight: bold;">---</div>
         <div class="letter-container" id="letter-container"></div>
         <div id="feedback" style="height: 20px; font-size: 0.9rem;"></div>
     </div>
@@ -129,168 +130,168 @@
         <button class="btn" onclick="location.reload()">YENİDEN BAŞLA</button>
     </div>
 
-    <script>
-        const correctSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2870/2870-preview.mp3');
-        const errorSound = new Audio('https://assets.mixkit.co/active_storage/sfx/946/946-preview.mp3');
+<script>
+const correctSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2870/2870-preview.mp3');
+const errorSound = new Audio('https://assets.mixkit.co/active_storage/sfx/946/946-preview.mp3');
 
-        const allWords = [
-            {q: "Bloom + Biology", a: "Bloomology"}, {q: "Sprout + Maintain", a: "Sproutain"}, {q: "Floral + Universe", a: "Floraverse"},
-            {q: "Verdant + Nature", a: "Verdanture"}, {q: "Stem + Empathy", a: "Stempathy"}, {q: "Seed + Landscape", a: "Seedscape"},
-            {q: "Branch + Chic", a: "Branchic"}, {q: "Moss + Osmosis", a: "Mossmosis"}, {q: "Twig + Digital", a: "Twigital"},
-            {q: "Leaf + Purity", a: "Leafity"}, {q: "Vine + Innovate", a: "Vinevate"}, {q: "Fern + Finish", a: "Fernish"},
-            {q: "Root + Utopia", a: "Rootopia"}, {q: "Bud + Flow", a: "Budflow"}, {q: "Bark + Architecture", a: "Barkitecture"}
-        ];
+const allWords = [
+    {q: "Bloom + Biology", a: "Bloomology"}, {q: "Sprout + Maintain", a: "Sproutain"}, {q: "Floral + Universe", a: "Floraverse"},
+    {q: "Verdant + Nature", a: "Verdanture"}, {q: "Stem + Empathy", a: "Stempathy"}, {q: "Seed + Landscape", a: "Seedscape"},
+    {q: "Branch + Chic", a: "Branchic"}, {q: "Moss + Osmosis", a: "Mossmosis"}, {q: "Twig + Digital", a: "Twigital"},
+    {q: "Leaf + Purity", a: "Leafity"}, {q: "Vine + Innovate", a: "Vinevate"}, {q: "Fern + Finish", a: "Fernish"},
+    {q: "Root + Utopia", a: "Rootopia"}, {q: "Bud + Flow", a: "Budflow"}, {q: "Bark + Architecture", a: "Barkitecture"}
+];
 
-        let currentIndex = 0;
-        let gameData = [];
-        let gameMode = 'free';
-        let startTime, timerInterval, countdownInterval;
-        let timeLeft = 15;
-        let tubeEnergy = 0;
-        let correctCount = 0;
+let currentIndex = 0;
+let gameData = [];
+let gameMode = 'free';
+let startTime, timerInterval, countdownInterval;
+let timeLeft = 15;
+let tubeEnergy = 0;
+let correctCount = 0;
 
-        function unlockAudio() {
-            correctSound.play().then(() => { correctSound.pause(); correctSound.currentTime = 0; });
-            errorSound.play().then(() => { errorSound.pause(); errorSound.currentTime = 0; });
-        }
+function unlockAudio() {
+    correctSound.play().then(() => { correctSound.pause(); correctSound.currentTime = 0; });
+    errorSound.play().then(() => { errorSound.pause(); errorSound.currentTime = 0; });
+}
 
-        function startGame(mode) {
-            unlockAudio();
-            gameMode = mode;
-            currentIndex = 0; // Sıfırlama eklendi
-            tubeEnergy = 0;
-            correctCount = 0;
-            
-            document.getElementById('menu-screen').style.display = 'none';
-            document.getElementById('game-screen').style.display = 'block';
-            document.getElementById('tube-outer').style.display = 'block';
-            document.getElementById('tube-fill').style.height = '0%';
-            
-            // Oyun sırasında Gündüz/Doğa resmi
-            document.getElementById('bg-layer').style.backgroundImage = "url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2000')";
-            
-            if(mode === 'timed') document.getElementById('timed-ui').style.display = 'inline';
-            
-            gameData = [...allWords].sort(() => Math.random() - 0.5).slice(0, 10);
-            startTime = Date.now();
-            startStopwatch();
-            loadLevel();
-        }
+function startGame(mode) {
+    unlockAudio();
+    gameMode = mode;
+    currentIndex = 0;
+    tubeEnergy = 0;
+    correctCount = 0;
 
-        function startStopwatch() {
-            timerInterval = setInterval(() => {
-                let diff = Math.floor((Date.now() - startTime) / 1000);
-                let m = Math.floor(diff / 60).toString().padStart(2, '0');
-                let s = (diff % 60).toString().padStart(2, '0');
-                document.getElementById('stopwatch').textContent = `${m}:${s}`;
-            }, 1000);
-        }
+    document.getElementById('menu-screen').style.display = 'none';
+    document.getElementById('game-screen').style.display = 'block';
+    document.getElementById('tube-outer').style.display = 'block';
+    document.getElementById('tube-fill').style.height = '0%';
 
-        function startCountdown() {
-            if(gameMode !== 'timed') return;
+    /* ☀️ OYUN = GÜNDÜZ */
+    document.getElementById('bg-layer').style.backgroundImage = "url('images/gunduz.png')";
+
+    if(mode === 'timed') document.getElementById('timed-ui').style.display = 'inline';
+
+    gameData = [...allWords].sort(() => Math.random() - 0.5).slice(0, 10);
+    startTime = Date.now();
+    startStopwatch();
+    loadLevel();
+}
+
+function startStopwatch() {
+    timerInterval = setInterval(() => {
+        let diff = Math.floor((Date.now() - startTime) / 1000);
+        let m = Math.floor(diff / 60).toString().padStart(2, '0');
+        let s = (diff % 60).toString().padStart(2, '0');
+        document.getElementById('stopwatch').textContent = `${m}:${s}`;
+    }, 1000);
+}
+
+function startCountdown() {
+    if(gameMode !== 'timed') return;
+    clearInterval(countdownInterval);
+    timeLeft = 15;
+    document.getElementById('countdown').textContent = timeLeft;
+    countdownInterval = setInterval(() => {
+        timeLeft--;
+        document.getElementById('countdown').textContent = timeLeft;
+        if(timeLeft <= 0) {
             clearInterval(countdownInterval);
-            timeLeft = 15;
-            document.getElementById('countdown').textContent = timeLeft;
-            countdownInterval = setInterval(() => {
-                timeLeft--;
-                document.getElementById('countdown').textContent = timeLeft;
-                if(timeLeft <= 0) {
-                    clearInterval(countdownInterval);
-                    errorSound.play();
-                    handleTimeOut();
-                }
-            }, 1000);
+            errorSound.play();
+            handleTimeOut();
         }
+    }, 1000);
+}
 
-        function handleTimeOut() {
-            const inputs = document.querySelectorAll('.letter-input');
-            inputs.forEach(input => input.classList.add('error'));
-            tubeEnergy = Math.max(0, tubeEnergy - 5);
+function handleTimeOut() {
+    const inputs = document.querySelectorAll('.letter-input');
+    inputs.forEach(input => input.classList.add('error'));
+    tubeEnergy = Math.max(0, tubeEnergy - 5);
+    updateTube();
+    setTimeout(() => nextLevel(), 800);
+}
+
+function loadLevel() {
+    const current = gameData[currentIndex];
+    document.getElementById('current-formula').textContent = current.q;
+    document.getElementById('q-counter').textContent = `${currentIndex + 1} / 10`;
+    const container = document.getElementById('letter-container');
+    container.innerHTML = '';
+
+    for (let i = 0; i < current.a.length; i++) {
+        const input = document.createElement('input');
+        input.type = 'text'; input.maxLength = 1; input.className = 'letter-input';
+        input.setAttribute('autocomplete', 'off');
+        input.addEventListener('input', (e) => {
+            if (e.target.value.length === 1) {
+                if (container.children[i + 1]) container.children[i + 1].focus();
+                checkAnswer();
+            }
+        });
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && e.target.value === '' && container.children[i - 1]) {
+                container.children[i - 1].focus();
+            }
+        });
+        container.appendChild(input);
+    }
+    setTimeout(() => container.children[0].focus(), 100);
+    startCountdown();
+}
+
+function checkAnswer() {
+    const inputs = document.querySelectorAll('.letter-input');
+    let userWord = "";
+    inputs.forEach(input => userWord += input.value);
+    const target = gameData[currentIndex].a;
+
+    if (userWord.length === target.length) {
+        if (userWord.toLowerCase() === target.toLowerCase()) {
+            clearInterval(countdownInterval);
+            correctSound.play();
+            inputs.forEach(input => {
+                input.classList.add('correct');
+                input.disabled = true;
+            });
+            tubeEnergy = Math.min(100, tubeEnergy + 10);
+            correctCount++;
             updateTube();
-            setTimeout(() => nextLevel(), 800);
+            setTimeout(() => nextLevel(), 600);
+        } else {
+            errorSound.play();
+            inputs.forEach(input => {
+                input.classList.add('error');
+                setTimeout(() => input.classList.remove('error'), 400);
+            });
         }
+    }
+}
 
-        function loadLevel() {
-            const current = gameData[currentIndex];
-            document.getElementById('current-formula').textContent = current.q;
-            document.getElementById('q-counter').textContent = `${currentIndex + 1} / 10`;
-            const container = document.getElementById('letter-container');
-            container.innerHTML = '';
+function updateTube() {
+    document.getElementById('tube-fill').style.height = tubeEnergy + '%';
+}
 
-            for (let i = 0; i < current.a.length; i++) {
-                const input = document.createElement('input');
-                input.type = 'text'; input.maxLength = 1; input.className = 'letter-input';
-                input.setAttribute('autocomplete', 'off');
-                input.addEventListener('input', (e) => {
-                    if (e.target.value.length === 1) {
-                        if (container.children[i + 1]) container.children[i + 1].focus();
-                        checkAnswer();
-                    }
-                });
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Backspace' && e.target.value === '' && container.children[i - 1]) {
-                        container.children[i - 1].focus();
-                    }
-                });
-                container.appendChild(input);
-            }
-            setTimeout(() => container.children[0].focus(), 100);
-            startCountdown();
-        }
+function nextLevel() {
+    currentIndex++;
+    if (currentIndex < 10) loadLevel();
+    else finishGame();
+}
 
-        function checkAnswer() {
-            const inputs = document.querySelectorAll('.letter-input');
-            let userWord = "";
-            inputs.forEach(input => userWord += input.value);
-            const target = gameData[currentIndex].a;
+function finishGame() {
+    clearInterval(timerInterval);
+    clearInterval(countdownInterval);
 
-            if (userWord.length === target.length) {
-                if (userWord.toLowerCase() === target.toLowerCase()) {
-                    clearInterval(countdownInterval);
-                    correctSound.play();
-                    inputs.forEach(input => {
-                        input.classList.add('correct');
-                        input.disabled = true;
-                    });
-                    tubeEnergy = Math.min(100, tubeEnergy + 10);
-                    correctCount++;
-                    updateTube();
-                    setTimeout(() => nextLevel(), 600);
-                } else {
-                    errorSound.play();
-                    inputs.forEach(input => {
-                        input.classList.add('error');
-                        setTimeout(() => input.classList.remove('error'), 400);
-                    });
-                }
-            }
-        }
+    /* 🌙 BİTİŞ = GECE */
+    document.getElementById('bg-layer').style.backgroundImage = "url('images/gece.png')";
 
-        function updateTube() {
-            document.getElementById('tube-fill').style.height = tubeEnergy + '%';
-        }
+    document.getElementById('game-screen').style.display = 'none';
+    document.getElementById('tube-outer').style.display = 'none';
+    document.getElementById('final-screen').style.display = 'block';
+    document.getElementById('final-time').textContent = document.getElementById('stopwatch').textContent;
+    document.getElementById('final-score-text').textContent = `10 soruda ${correctCount} doğru cevap!`;
 
-        function nextLevel() {
-            currentIndex++;
-            if (currentIndex < 10) loadLevel();
-            else finishGame();
-        }
-
-        function finishGame() {
-            clearInterval(timerInterval);
-            clearInterval(countdownInterval);
-            
-            // Bitişte Gece Resmi
-            document.getElementById('bg-layer').style.backgroundImage = "url('https://images.unsplash.com/photo-1506318137071-a8e063b4bcc0?q=80&w=2000')";
-            
-            document.getElementById('game-screen').style.display = 'none';
-            document.getElementById('tube-outer').style.display = 'none';
-            document.getElementById('final-screen').style.display = 'block';
-            document.getElementById('final-time').textContent = document.getElementById('stopwatch').textContent;
-            document.getElementById('final-score-text').textContent = `10 soruda ${correctCount} doğru cevap!`;
-            
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-        }
-    </script>
+    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+}
+</script>
 </body>
 </html>
