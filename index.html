@@ -8,288 +8,138 @@
     <style>
         :root {
             --primary-color: #4caf50;
-            --error-color: #f44336;
-            --bg-glass: rgba(0, 0, 0, 0.65);
+            --bg-glass: rgba(0, 0, 0, 0.7);
         }
-
-        * { box-sizing: border-box; }
 
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
             font-family: 'Segoe UI', sans-serif;
             display: flex; justify-content: center; align-items: center;
             overflow: hidden; color: white;
-            background-color: #1a1a1a;
+            background-color: #000;
         }
 
+        /* GECE VE GÜNDÜZÜ YÖNETEN KATMAN */
         #bg-layer {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-size: cover; background-position: center;
+            background-size: cover;
+            background-position: center;
             z-index: -1;
-            transition: background-image 1.2s ease-in-out;
-            /* İlk açılışta Gece Resmi */
-            background-image: url('https://images.unsplash.com/photo-1506318137071-a8e063b4bcc0?q=80&w=2000'); 
+            transition: background-image 1.5s ease-in-out; /* Geçiş yumuşatma */
+            /* İLK AÇILIŞ: GECE RESMİ */
+            background-image: url('https://images.unsplash.com/photo-1532767153582-b1a0e5145009?q=80&w=2000'); 
         }
 
         .card {
             background: var(--bg-glass);
-            backdrop-filter: blur(12px);
-            padding: 30px 20px;
-            border-radius: 24px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            backdrop-filter: blur(15px);
+            padding: 40px;
+            border-radius: 30px;
             text-align: center;
-            width: 92%; max-width: 550px;
+            width: 90%; max-width: 500px;
             border: 1px solid rgba(255,255,255,0.1);
-            z-index: 10;
         }
-
-        .letter-container {
-            display: flex; justify-content: center; gap: 6px;
-            margin: 20px 0; flex-wrap: wrap;
-            padding: 10px 5px;
-        }
-
-        .letter-input {
-            width: clamp(30px, 8vw, 45px);
-            height: clamp(40px, 10vw, 55px);
-            font-size: clamp(1.2rem, 4vw, 1.8rem);
-            font-weight: bold;
-            text-align: center; text-transform: uppercase;
-            border: 2px solid rgba(255,255,255,0.2); border-radius: 8px;
-            background: rgba(255,255,255,0.1); color: white;
-            outline: none; transition: all 0.2s;
-        }
-
-        .letter-input.correct { border-color: var(--primary-color); background: rgba(76, 175, 80, 0.4); border-width: 3px; }
-        .letter-input.error { border-color: var(--error-color); background: rgba(244, 67, 54, 0.3); animation: shake 0.4s; }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        #tube-outer {
-            position: fixed; left: 20px; top: 50%; transform: translateY(-50%);
-            width: 20px; height: 250px;
-            background: rgba(0, 0, 0, 0.5);
-            border: 2px solid rgba(255,255,255,0.2);
-            border-radius: 30px; overflow: hidden; display: none;
-        }
-
-        #tube-fill {
-            position: absolute; bottom: 0; width: 100%; height: 0%;
-            background: linear-gradient(to top, #1b5e20, #4caf50);
-            transition: height 0.6s ease;
-        }
-
-        .timer-info { font-size: 1rem; margin-bottom: 15px; display: flex; justify-content: space-between; color: #ddd; }
-        #countdown { color: #ff9800; font-weight: bold; }
 
         .btn {
-            background: var(--primary-color); color: white; border: none;
-            padding: 16px 32px; font-size: 1.1rem; font-weight: bold;
-            border-radius: 14px; cursor: pointer; transition: 0.3s;
-            margin: 10px; width: 85%;
+            background: var(--primary-color);
+            color: white; border: none;
+            padding: 15px 30px; font-size: 1.2rem;
+            border-radius: 15px; cursor: pointer;
+            margin-top: 20px; width: 100%;
         }
-        .btn:hover { transform: scale(1.05); background: #43a047; }
 
-        @media (max-width: 768px) {
-            #tube-outer { left: 10px; height: 200px; width: 15px; }
+        .letter-container { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
+        .letter-input {
+            width: 40px; height: 50px; font-size: 1.5rem;
+            text-align: center; background: rgba(255,255,255,0.1);
+            color: white; border: 2px solid #555; border-radius: 8px;
         }
+        .correct { border-color: var(--primary-color) !important; background: rgba(76, 175, 80, 0.2); }
     </style>
 </head>
 <body>
 
     <div id="bg-layer"></div>
-    <div id="tube-outer"><div id="tube-fill"></div></div>
 
     <div class="card" id="menu-screen">
-        <h1 style="color: var(--primary-color); margin-bottom: 10px; letter-spacing: 2px;">BLENDİNG</h1>
-        <p>Kelimeleri birleştir, sistemi enerjiyle doldur!</p>
-        <button class="btn" onclick="startGame('free')">SÜRESİZ MOD</button><br>
-        <button class="btn" onclick="startGame('timed')" style="background: #e67e22;">SÜRELİ MOD (15s)</button>
+        <h1 style="color: var(--primary-color);">BLENDİNG</h1>
+        <p>Kelimeleri birleştir, dünyayı aydınlat.</p>
+        <button class="btn" onclick="startGame()">OYUNU BAŞLAT</button>
     </div>
 
     <div class="card" id="game-screen" style="display: none;">
-        <div class="timer-info">
-            <span>Zaman: <span id="stopwatch">00:00</span></span>
-            <span id="q-counter">1 / 10</span>
-            <span id="timed-ui" style="display: none;">Kalan: <span id="countdown">15</span>s</span>
-        </div>
-        <div id="current-formula" style="font-size: 1.5rem; margin: 20px 0; font-weight: bold; color: #fff;">---</div>
+        <h2 id="formula">Yükleniyor...</h2>
         <div class="letter-container" id="letter-container"></div>
-        <div id="feedback" style="height: 20px; font-size: 0.9rem;"></div>
     </div>
 
     <div class="card" id="final-screen" style="display: none;">
-        <h1 style="color: gold;">Görev Tamamlandı!</h1>
-        <p>Toplam Süre: <span id="final-time">00:00</span></p>
-        <p id="final-score-text"></p>
-        <button class="btn" onclick="location.reload()">YENİDEN BAŞLA</button>
+        <h1>Tebrikler Şampiyon!</h1>
+        <p>Her şey aydınlandı.</p>
+        <button class="btn" onclick="location.reload()">BAŞTAN OYNA</button>
     </div>
 
     <script>
-        const correctSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2870/2870-preview.mp3');
-        const errorSound = new Audio('https://assets.mixkit.co/active_storage/sfx/946/946-preview.mp3');
+        // RESİM LİNKLERİNİ BURADAN KONTROL EDEBİLİRSİN
+        const NIGHT_IMG = "url('https://images.unsplash.com/photo-1532767153582-b1a0e5145009?q=80&w=2000')";
+        const DAY_IMG = "url('https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=2000')";
 
-        const allWords = [
-            {q: "Bloom + Biology", a: "Bloomology"}, {q: "Sprout + Maintain", a: "Sproutain"}, {q: "Floral + Universe", a: "Floraverse"},
-            {q: "Verdant + Nature", a: "Verdanture"}, {q: "Stem + Empathy", a: "Stempathy"}, {q: "Seed + Landscape", a: "Seedscape"},
-            {q: "Branch + Chic", a: "Branchic"}, {q: "Moss + Osmosis", a: "Mossmosis"}, {q: "Twig + Digital", a: "Twigital"},
-            {q: "Leaf + Purity", a: "Leafity"}, {q: "Vine + Innovate", a: "Vinevate"}, {q: "Fern + Finish", a: "Fernish"},
-            {q: "Root + Utopia", a: "Rootopia"}, {q: "Bud + Flow", a: "Budflow"}, {q: "Bark + Architecture", a: "Barkitecture"}
+        const words = [
+            {q: "Bloom + Biology", a: "Bloomology"},
+            {q: "Sprout + Maintain", a: "Sproutain"}
         ];
+        let currentIdx = 0;
 
-        let currentIndex = 0;
-        let gameData = [];
-        let gameMode = 'free';
-        let startTime, timerInterval, countdownInterval;
-        let timeLeft = 15;
-        let tubeEnergy = 0;
-        let correctCount = 0;
-
-        function unlockAudio() {
-            correctSound.play().then(() => { correctSound.pause(); correctSound.currentTime = 0; });
-            errorSound.play().then(() => { errorSound.pause(); errorSound.currentTime = 0; });
-        }
-
-        function startGame(mode) {
-            unlockAudio();
-            gameMode = mode;
-            currentIndex = 0; // Sıfırlama eklendi
-            tubeEnergy = 0;
-            correctCount = 0;
-            
+        function startGame() {
             document.getElementById('menu-screen').style.display = 'none';
             document.getElementById('game-screen').style.display = 'block';
-            document.getElementById('tube-outer').style.display = 'block';
-            document.getElementById('tube-fill').style.height = '0%';
+
+            // GÜNDÜZE GEÇİŞ YAPILIYOR
+            document.getElementById('bg-layer').style.backgroundImage = DAY_IMG;
             
-            // Oyun sırasında Gündüz/Doğa resmi
-            document.getElementById('bg-layer').style.backgroundImage = "url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2000')";
-            
-            if(mode === 'timed') document.getElementById('timed-ui').style.display = 'inline';
-            
-            gameData = [...allWords].sort(() => Math.random() - 0.5).slice(0, 10);
-            startTime = Date.now();
-            startStopwatch();
             loadLevel();
         }
 
-        function startStopwatch() {
-            timerInterval = setInterval(() => {
-                let diff = Math.floor((Date.now() - startTime) / 1000);
-                let m = Math.floor(diff / 60).toString().padStart(2, '0');
-                let s = (diff % 60).toString().padStart(2, '0');
-                document.getElementById('stopwatch').textContent = `${m}:${s}`;
-            }, 1000);
-        }
-
-        function startCountdown() {
-            if(gameMode !== 'timed') return;
-            clearInterval(countdownInterval);
-            timeLeft = 15;
-            document.getElementById('countdown').textContent = timeLeft;
-            countdownInterval = setInterval(() => {
-                timeLeft--;
-                document.getElementById('countdown').textContent = timeLeft;
-                if(timeLeft <= 0) {
-                    clearInterval(countdownInterval);
-                    errorSound.play();
-                    handleTimeOut();
-                }
-            }, 1000);
-        }
-
-        function handleTimeOut() {
-            const inputs = document.querySelectorAll('.letter-input');
-            inputs.forEach(input => input.classList.add('error'));
-            tubeEnergy = Math.max(0, tubeEnergy - 5);
-            updateTube();
-            setTimeout(() => nextLevel(), 800);
-        }
-
         function loadLevel() {
-            const current = gameData[currentIndex];
-            document.getElementById('current-formula').textContent = current.q;
-            document.getElementById('q-counter').textContent = `${currentIndex + 1} / 10`;
+            const data = words[currentIdx];
+            document.getElementById('formula').innerText = data.q;
             const container = document.getElementById('letter-container');
             container.innerHTML = '';
 
-            for (let i = 0; i < current.a.length; i++) {
+            for(let i=0; i<data.a.length; i++) {
                 const input = document.createElement('input');
-                input.type = 'text'; input.maxLength = 1; input.className = 'letter-input';
-                input.setAttribute('autocomplete', 'off');
-                input.addEventListener('input', (e) => {
-                    if (e.target.value.length === 1) {
-                        if (container.children[i + 1]) container.children[i + 1].focus();
-                        checkAnswer();
-                    }
-                });
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Backspace' && e.target.value === '' && container.children[i - 1]) {
-                        container.children[i - 1].focus();
-                    }
-                });
+                input.className = 'letter-input';
+                input.maxLength = 1;
+                input.oninput = () => {
+                    if(input.value && container.children[i+1]) container.children[i+1].focus();
+                    checkAnswer();
+                };
                 container.appendChild(input);
             }
-            setTimeout(() => container.children[0].focus(), 100);
-            startCountdown();
+            container.children[0].focus();
         }
 
         function checkAnswer() {
             const inputs = document.querySelectorAll('.letter-input');
-            let userWord = "";
-            inputs.forEach(input => userWord += input.value);
-            const target = gameData[currentIndex].a;
+            let userVal = "";
+            inputs.forEach(i => userVal += i.value);
 
-            if (userWord.length === target.length) {
-                if (userWord.toLowerCase() === target.toLowerCase()) {
-                    clearInterval(countdownInterval);
-                    correctSound.play();
-                    inputs.forEach(input => {
-                        input.classList.add('correct');
-                        input.disabled = true;
-                    });
-                    tubeEnergy = Math.min(100, tubeEnergy + 10);
-                    correctCount++;
-                    updateTube();
-                    setTimeout(() => nextLevel(), 600);
-                } else {
-                    errorSound.play();
-                    inputs.forEach(input => {
-                        input.classList.add('error');
-                        setTimeout(() => input.classList.remove('error'), 400);
-                    });
-                }
+            if(userVal.toLowerCase() === words[currentIdx].a.toLowerCase()) {
+                inputs.forEach(i => i.classList.add('correct'));
+                setTimeout(() => {
+                    currentIdx++;
+                    if(currentIdx < words.length) loadLevel();
+                    else finishGame();
+                }, 800);
             }
         }
 
-        function updateTube() {
-            document.getElementById('tube-fill').style.height = tubeEnergy + '%';
-        }
-
-        function nextLevel() {
-            currentIndex++;
-            if (currentIndex < 10) loadLevel();
-            else finishGame();
-        }
-
         function finishGame() {
-            clearInterval(timerInterval);
-            clearInterval(countdownInterval);
-            
-            // Bitişte Gece Resmi
-            document.getElementById('bg-layer').style.backgroundImage = "url('https://images.unsplash.com/photo-1506318137071-a8e063b4bcc0?q=80&w=2000')";
+            // OYUN BİTTİĞİNDE GECEYE DÖNÜŞ (İstersen bunu kaldırabilirsin)
+            document.getElementById('bg-layer').style.backgroundImage = NIGHT_IMG;
             
             document.getElementById('game-screen').style.display = 'none';
-            document.getElementById('tube-outer').style.display = 'none';
             document.getElementById('final-screen').style.display = 'block';
-            document.getElementById('final-time').textContent = document.getElementById('stopwatch').textContent;
-            document.getElementById('final-score-text').textContent = `10 soruda ${correctCount} doğru cevap!`;
-            
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            confetti({ particleCount: 150, spread: 70 });
         }
     </script>
 </body>
