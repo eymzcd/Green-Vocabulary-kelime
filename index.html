@@ -20,11 +20,16 @@
             display: flex; justify-content: center; align-items: center;
             overflow: hidden; color: white;
             transition: background 1.5s ease-in-out;
-            background: linear-gradient(135deg, #0a1550 0%, #001f3f 100%);
+            
+            /* GECE ARKA PLANI */
+            background: url('gece.png') no-repeat center center fixed;
+            background-size: cover;
         }
 
         body.day-mode {
-            background: linear-gradient(135deg, #87CEEB 0%, #E0F6FF 100%);
+            /* GÜNDÜZ ARKA PLANI */
+            background: url('gunduz.png') no-repeat center center fixed;
+            background-size: cover;
         }
 
         .card {
@@ -166,6 +171,7 @@ function startGame(mode) {
     document.getElementById('tube-outer').style.display = 'block';
     document.getElementById('tube-fill').style.height = '0%';
 
+    // Başlangıçta gündüz resmine geçiş
     document.body.classList.add('day-mode');
 
     if(mode === 'timed') document.getElementById('timed-ui').style.display = 'inline';
@@ -279,6 +285,7 @@ function finishGame() {
     clearInterval(timerInterval);
     clearInterval(countdownInterval);
 
+    // Bitişte tekrar gece resmine dönüş
     document.body.classList.remove('day-mode');
 
     document.getElementById('game-screen').style.display = 'none';
