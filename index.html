@@ -19,14 +19,14 @@
             font-family: 'Segoe UI', sans-serif;
             display: flex; justify-content: center; align-items: center;
             overflow: hidden; color: white;
-            background-color: #1a1a1a;
         }
 
-        #bg-layer {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-size: cover; background-position: center;
-            z-index: -1;
-            transition: background 1.2s ease-in-out;
+        body {
+            background: linear-gradient(135deg, #0a1550 0%, #001f3f 100%);
+        }
+
+        body.day-mode {
+            background: linear-gradient(135deg, #87CEEB 0%, #E0F6FF 100%);
         }
 
         .card {
@@ -99,7 +99,6 @@
 </head>
 <body>
 
-    <div id="bg-layer"></div>
     <div id="tube-outer"><div id="tube-fill"></div></div>
 
     <div class="card" id="menu-screen">
@@ -147,16 +146,6 @@ let timeLeft = 15;
 let tubeEnergy = 0;
 let correctCount = 0;
 
-function setNightBackground() {
-    const bgLayer = document.getElementById('bg-layer');
-    bgLayer.style.background = 'linear-gradient(135deg, #0a1550 0%, #001f3f 100%)';
-}
-
-function setDayBackground() {
-    const bgLayer = document.getElementById('bg-layer');
-    bgLayer.style.background = 'linear-gradient(135deg, #87CEEB 0%, #E0F6FF 100%)';
-}
-
 function unlockAudio() {
     correctSound.play().then(() => { correctSound.pause(); correctSound.currentTime = 0; });
     errorSound.play().then(() => { errorSound.pause(); errorSound.currentTime = 0; });
@@ -174,7 +163,7 @@ function startGame(mode) {
     document.getElementById('tube-outer').style.display = 'block';
     document.getElementById('tube-fill').style.height = '0%';
 
-    setDayBackground();
+    document.body.classList.add('day-mode');
 
     if(mode === 'timed') document.getElementById('timed-ui').style.display = 'inline';
 
@@ -287,7 +276,7 @@ function finishGame() {
     clearInterval(timerInterval);
     clearInterval(countdownInterval);
 
-    setNightBackground();
+    document.body.classList.remove('day-mode');
 
     document.getElementById('game-screen').style.display = 'none';
     document.getElementById('tube-outer').style.display = 'none';
@@ -297,9 +286,6 @@ function finishGame() {
 
     confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
 }
-
-// Başlangıçta Gece Arka Planı
-setNightBackground();
 </script>
 </body>
 </html>
